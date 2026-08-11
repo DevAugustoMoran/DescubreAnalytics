@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { Users, Target, MousePointerClick } from 'lucide-react';
+import { 
+  Users, Target, MousePointerClick, 
+  BarChart2, Database, TrendingUp, PieChart, 
+  Activity, Network, Search, Layers 
+} from 'lucide-react';
 
 // 1. Conexión segura usando variables de entorno
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
@@ -8,7 +12,7 @@ const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_KEY;
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // 2. Estilos extraídos
-const cardStyle = { background: '#1E293B', padding: 24, borderRadius: 12, border: '1px solid rgba(255,255,255,0.05)' };
+const cardStyle = { background: '#1E293B', padding: 24, borderRadius: 12, border: '1px solid rgba(255,255,255,0.05)', position: 'relative', zIndex: 10 };
 const thStyle = { padding: '16px', fontWeight: 600, color: '#94A3B8', fontSize: 14 };
 const tdStyle = { padding: '16px', verticalAlign: 'top' };
 
@@ -20,13 +24,26 @@ const getBadgeStyle = (perfil) => {
   return { padding: '4px 10px', borderRadius: 20, fontSize: 12, fontWeight: 600, background: bg, color, display: 'inline-block' };
 };
 
-// 3. Componente Principal
+// 3. Componente de Stickers para el Fondo
+const StickerGroup = () => (
+  <div style={{ display: 'flex' }}>
+    <BarChart2 size={70} className="sticker-icon" />
+    <Database size={70} className="sticker-icon" />
+    <TrendingUp size={70} className="sticker-icon" />
+    <PieChart size={70} className="sticker-icon" />
+    <Activity size={70} className="sticker-icon" />
+    <Network size={70} className="sticker-icon" />
+    <Search size={70} className="sticker-icon" />
+    <Layers size={70} className="sticker-icon" />
+  </div>
+);
+
+// 4. Componente Principal
 export default function App() {
   const [stats, setStats] = useState({ inicios: 0, completos: 0, leads: [] });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Función para cargar los datos
     const fetchData = async () => {
       try {
         const { data: eventos } = await supabase.from('eventos').select('*');
@@ -43,21 +60,18 @@ export default function App() {
       }
     };
 
-    // Primera carga al abrir la app
     fetchData();
 
-    // SUSCRIPCIÓN EN TIEMPO REAL
     const subscription = supabase
       .channel('dashboard-cambios')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'eventos' }, () => {
-        fetchData(); // Recarga si hay un nuevo evento
+        fetchData();
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'leads' }, () => {
-        fetchData(); // Recarga si hay un nuevo lead
+        fetchData();
       })
       .subscribe();
 
-    // Limpiar suscripción al cerrar el componente
     return () => {
       supabase.removeChannel(subscription);
     };
@@ -74,12 +88,62 @@ export default function App() {
   const completionRate = stats.inicios > 0 ? Math.round((stats.completos / stats.inicios) * 100) : 0;
 
   return (
-    <div style={{ background: '#0F172A', color: 'white', minHeight: '100vh', padding: '40px 20px', fontFamily: 'system-ui, sans-serif' }}>
-      <div style={{ maxWidth: 1000, margin: '0 auto' }}>
+    <div style={{ position: 'relative', color: 'white', minHeight: '100vh', padding: '40px 20px', fontFamily: 'system-ui, sans-serif', overflow: 'hidden' }}>
+      
+      {/* --- INICIO ESTILOS DEL FONDO ANIMADO --- */}
+      <style>
+        {`
+          @keyframes scroll-left {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+          }
+          @keyframes scroll-right {
+            0% { transform: translateX(-50%); }
+            100% { transform: translateX(0); }
+          }
+          .bg-layer {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #0F172A;
+            z-index: -1;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+            overflow: hidden;
+          }
+          .sticker-track {
+            display: flex;
+            width: max-content;
+            opacity: 0.03; /* Muy sutil, para no estorbar la lectura */
+          }
+          .track-left { animation: scroll-left 50s linear infinite; }
+          .track-right { animation: scroll-right 60s linear infinite; }
+          .sticker-icon {
+            margin: 0 60px;
+            color: #94A3B8; /* Gris azulado para integrarse al fondo oscuro */
+          }
+        `}
+      </style>
+
+      {/* --- RENDERIZADO DEL FONDO --- */}
+      <div className="bg-layer">
+        <div className="sticker-track track-left">
+          <StickerGroup /><StickerGroup /><StickerGroup /><StickerGroup />
+        </div>
+        <div className="sticker-track track-right">
+          <StickerGroup /><StickerGroup /><StickerGroup /><StickerGroup />
+        </div>
+        <div className="sticker-track track-left" style={{ animationDuration: '70s' }}>
+          <StickerGroup /><StickerGroup /><StickerGroup /><StickerGroup />
+        </div>
+      </div>
+      {/* --- FIN DEL FONDO --- */}
+
+      <div style={{ maxWidth: 1000, margin: '0 auto', position: 'relative', zIndex: 10 }}>
         
-        {/* AQUÍ ESTÁ EL NUEVO TÍTULO CON EL LOGO */}
         <h1 style={{ color: '#E8C978', marginBottom: 30, display: 'flex', alignItems: 'center', gap: 12 }}>
-          <img src="/logo-galileo.png" alt="Logo Universidad" style={{ height: 40, objectFit: 'contain' }} /> 
+          <img src="logo-galileo.png" alt="Logo Universidad" style={{ height: 40, objectFit: 'contain' }} /> 
           Descubre Analytics
         </h1>
         
@@ -102,7 +166,7 @@ export default function App() {
         </div>
 
         <h2 style={{ marginBottom: 20 }}>Prospectos Recientes (IA Scoring)</h2>
-        <div style={{ background: '#1E293B', borderRadius: 12, overflow: 'hidden' }}>
+        <div style={{ background: '#1E293B', borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)' }}>
           <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ background: '#334155', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
