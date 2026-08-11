@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { Users, Target, MousePointerClick, BrainCircuit } from 'lucide-react';
+import { Users, Target, MousePointerClick } from 'lucide-react';
 
-// 1. REEMPLAZA ESTO CON TUS DATOS DE SUPABASE
+// 1. Conexión segura usando variables de entorno
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_KEY;
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -26,14 +26,13 @@ export default function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Función para cargar los datos
     const fetchData = async () => {
       try {
-        // Obtener eventos
         const { data: eventos } = await supabase.from('eventos').select('*');
         const inicios = eventos ? eventos.filter(e => e.evento === 'inicio_reto').length : 0;
         const completos = eventos ? eventos.filter(e => e.evento === 'completo_reto').length : 0;
         
-        // Obtener leads
         const { data: leads } = await supabase.from('leads').select('*').order('fecha', { ascending: false });
         
         setStats({ inicios, completos, leads: leads || [] });
@@ -43,13 +42,31 @@ export default function App() {
         setLoading(false);
       }
     };
+
+    // Primera carga al abrir la app
     fetchData();
+
+    // SUSCRIPCIÓN EN TIEMPO REAL
+    const subscription = supabase
+      .channel('dashboard-cambios')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'eventos' }, () => {
+        fetchData(); // Recarga si hay un nuevo evento
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'leads' }, () => {
+        fetchData(); // Recarga si hay un nuevo lead
+      })
+      .subscribe();
+
+    // Limpiar suscripción al cerrar el componente
+    return () => {
+      supabase.removeChannel(subscription);
+    };
   }, []);
 
   if (loading) {
     return (
       <div style={{ padding: 40, color: 'white', background: '#0F172A', minHeight: '100vh' }}>
-        Cargando métricas de Galileo...
+        Cargando Descubre Analytics...
       </div>
     );
   }
@@ -59,8 +76,11 @@ export default function App() {
   return (
     <div style={{ background: '#0F172A', color: 'white', minHeight: '100vh', padding: '40px 20px', fontFamily: 'system-ui, sans-serif' }}>
       <div style={{ maxWidth: 1000, margin: '0 auto' }}>
-        <h1 style={{ color: '#E8C978', marginBottom: 30, display: 'flex', alignItems: 'center', gap: 10 }}>
-          <BrainCircuit /> Galileo Analytics
+        
+        {/* AQUÍ ESTÁ EL NUEVO TÍTULO CON EL LOGO */}
+        <h1 style={{ color: '#E8C978', marginBottom: 30, display: 'flex', alignItems: 'center', gap: 12 }}>
+          <img src="/logo-galileo.png" alt="Logo Universidad" style={{ height: 40, objectFit: 'contain' }} /> 
+          Descubre Analytics
         </h1>
         
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 20, marginBottom: 40 }}>
@@ -103,7 +123,7 @@ export default function App() {
                   <td style={tdStyle}>
                     <span style={getBadgeStyle(lead.perfil_ia)}>{lead.perfil_ia}</span>
                   </td>
-                  <td style={{ ...tdStyle, fontSize: 13, color: '#CBD5E1', maxWidth: 300 }}>
+                  <td style={{ ...tdStyle, fontSize: 13, color: '#CBD5E1', maxWidth: 300, lineHeight: 1.5 }}>
                     {lead.resumen_ia}
                   </td>
                 </tr>
