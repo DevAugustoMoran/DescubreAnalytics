@@ -3,8 +3,8 @@ import { createClient } from '@supabase/supabase-js';
 import { Users, Target, MousePointerClick, BrainCircuit } from 'lucide-react';
 
 // 1. REEMPLAZA ESTO CON TUS DATOS DE SUPABASE
-const SUPABASE_URL = 'https://ehxuzdtewqfcbqrmujyn.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_4_yZ1k4pNciW181n9doiuw_AiIXMcy6';
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_KEY;
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // 2. Estilos extraídos
