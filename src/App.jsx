@@ -85,7 +85,7 @@ export default function App() {
     );
   }
 
-  const completionRate = stats.inicios > 0 ? Math.round((stats.completos / stats.inicios) * 100) : 0;
+  const completionRate = stats.inicios > 0 ? Math.round((stats.leads.length / stats.inicios) * 100) : 0;
 
   return (
     <div style={{ position: 'relative', color: 'white', minHeight: '100vh', padding: '40px 20px', fontFamily: 'system-ui, sans-serif', overflow: 'hidden' }}>
