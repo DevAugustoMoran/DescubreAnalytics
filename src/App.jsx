@@ -136,7 +136,7 @@ export default function App() {
       <div style={{ maxWidth: 1000, margin: '0 auto', position: 'relative', zIndex: 10 }}>
         
         <h1 style={{ color: '#E8C978', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 12, fontSize: 'clamp(1.5rem, 3vw, 2rem)' }}>
-          <img src="/logo.png" alt="Logo Universidad" style={{ height: 35, objectFit: 'contain' }} /> 
+          <img src="/logo-galileo.png" alt="Logo Universidad" style={{ height: 35, objectFit: 'contain' }} /> 
           Descubre Analytics
         </h1>
         
